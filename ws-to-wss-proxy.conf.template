@@ -1,0 +1,22 @@
+server {
+        error_log /var/log/nginx/error.log debug;
+
+        ssl_prefer_server_ciphers on;
+
+        listen ${NGINX_PORT};
+        listen [::]:${NGINX_PORT};
+
+        location ~* /wss/(?<wss_host>[A-Za-z0-9\.-]+)/(?<wss_uri>.+)$ {
+                resolver 8.8.8.8;
+                proxy_ssl_server_name on;
+                proxy_ssl_protocols TLSv1.2;
+                proxy_ssl_certificate /cert/clientcert.pem;
+                proxy_ssl_certificate_key /cert/clientcertkey.pem;
+
+                proxy_pass https://$wss_host/$wss_uri;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "Upgrade";
+                proxy_set_header Host $wss_host;
+        }
+}
